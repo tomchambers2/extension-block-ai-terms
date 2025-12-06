@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Reddit Blocker",
+  "version": "1.0",
+  "description": "Blocks pages containing 'reddit' and plays an error sound",
+  "permissions": ["activeTab", "tabs", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
