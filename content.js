@@ -130,3 +130,62 @@ document.addEventListener('input', (e) => {
         }
     }
 }, true);
+
+// Check URL and search inputs on page load
+function checkPageLoad() {
+    // Check the URL for banned terms (covers search queries in URL)
+    const url = window.location.href;
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Check various common search query parameters
+    const searchParams = ['q', 'query', 'search', 'text', 'p', 'wd', 'keyword'];
+    for (const param of searchParams) {
+        const value = urlParams.get(param);
+        if (value && checkText(value)) {
+            blockPage();
+            return;
+        }
+    }
+    
+    // Also check the full URL (in case the term is in the path)
+    if (checkText(decodeURIComponent(url))) {
+        blockPage();
+        return;
+    }
+    
+    // Check search input fields that may already have values
+    // Common search input selectors across search engines
+    const searchSelectors = [
+        'input[name="q"]',           // Google, Bing
+        'input[name="query"]',       // Various
+        'input[name="search"]',      // Various
+        'input[name="p"]',           // Yahoo
+        'input[name="wd"]',          // Baidu
+        'input[type="search"]',      // Generic search inputs
+        'textarea[name="q"]',        // Google (sometimes uses textarea)
+        '[role="searchbox"]',        // Accessible search boxes
+        '[aria-label*="Search"]',    // Accessible search inputs
+    ];
+    
+    for (const selector of searchSelectors) {
+        const inputs = document.querySelectorAll(selector);
+        for (const input of inputs) {
+            const value = input.value || input.textContent;
+            if (value && checkText(value)) {
+                // Clear the banned content
+                if (input.value !== undefined) {
+                    input.value = removeBannedWords(input.value);
+                }
+                blockPage();
+                return;
+            }
+        }
+    }
+}
+
+// Run check on page load
+checkPageLoad();
+
+// Also run after a short delay to catch dynamically loaded content
+setTimeout(checkPageLoad, 500);
+setTimeout(checkPageLoad, 1500);
